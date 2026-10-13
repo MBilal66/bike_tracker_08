@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta name="theme-color" content="#e5173f">
+<meta name="description" content="Sporty motorcycle fuel, trip and service tracker">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bike Tracker</title>
+<style>
+:root{--bg:#e8eaee;--card:#ffffff;--tx:#10151c;--mu:#5b6675;--bd:#d9dee6;--ac:#e5173f;--ok:#16854a;--wa:#b86e00;--er:#d02f2f;--tr:#e3e8ee;--numfont:'Share Tech Mono',ui-monospace,monospace;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0f15;--card:#141a23;--tx:#e8edf4;--mu:#93a0b2;--bd:#252f3d;--ac:#ff4357;--ok:#3ddc84;--wa:#ffb340;--er:#ff6b6b;--tr:#1e2734}}
+:root[data-theme="dark"]{--bg:#0b0f15;--card:#141a23;--tx:#e8edf4;--mu:#93a0b2;--bd:#252f3d;--ac:#ff4357;--ok:#3ddc84;--wa:#ffb340;--er:#ff6b6b;--tr:#1e2734}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:17px/1.4 "Barlow Semi Condensed","Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-weight:500;letter-spacing:.005em;-webkit-font-smoothing:antialiased}
+.wrap{max-width:520px;margin:0 auto;padding:16px 14px 90px}
+h1{font-size:20px;margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:12px}
+#hdr{border-color:#222d3b;color:#e8edf4}
+#hdr .sub{color:#93a0b2}
+#hdr .meter{background:#05080c;border-color:#222d3b}
+b,.big,.st{font-weight:700}
+.sub{font-size:13px;color:var(--mu);margin-top:4px}
+input,select,textarea{width:100%;box-sizing:border-box;font:inherit;font-weight:500;padding:11px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
+button{font:inherit;border:0;border-radius:10px;padding:11px 14px;background:var(--ac);color:#fff;font-weight:700;letter-spacing:.02em}
+button.g{background:var(--tr);color:var(--tx)}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.bar{height:8px;background:var(--tr);border-radius:8px;overflow:hidden;margin:8px 0}
+.bar i{display:block;height:100%}
+.st{text-align:right;font-weight:700;font-size:13px}
+label{display:block;font-size:13px;color:var(--mu);margin:10px 0 4px}
+.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabs button{flex:1;background:none;color:var(--mu);border-radius:0;padding:14px}
+.tabs button.on{color:var(--ac);box-shadow:inset 0 3px 0 var(--ac)}
+.tabs button{font-weight:700;font-size:16px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;z-index:9}
+.sheet{background:var(--card);width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:16px;max-height:90%;overflow:auto;box-sizing:border-box}
+.big{font-size:34px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.swatch{width:34px;height:34px;border-radius:50%;border:2px solid var(--bd);display:inline-block;cursor:pointer;margin:2px}
+.swatch.on{border-color:var(--tx);box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--tx)}
+.swatch.scheme{vertical-align:middle}
+.meter{background:#111;font-family:'Space Mono',ui-monospace,monospace;font-weight:700;letter-spacing:3px;border:1px solid #000;border-radius:6px;font-size:21px}
+.meter-blue{color:#3ea6ff;text-shadow:0 0 6px rgba(62,166,255,.85),0 0 14px rgba(62,166,255,.5)}
+.meter-blue::placeholder{color:#1c4a66;text-shadow:none}
+.meter-green{color:#4caf50;text-shadow:0 0 6px rgba(76,175,80,.85),0 0 14px rgba(76,175,80,.5)}
+.meter-green::placeholder{color:#264d27;text-shadow:none}
+.meter-gold{color:#ffd54f;text-shadow:0 0 6px rgba(255,213,79,.85),0 0 14px rgba(255,193,7,.5)}
+.meter-gold::placeholder{color:#6b5a20;text-shadow:none}
+.meter-white{color:#f5f5f5;text-shadow:0 0 6px rgba(255,255,255,.85),0 0 14px rgba(255,255,255,.4)}
+.meter-white::placeholder{color:#666;text-shadow:none}
+.meter-red{color:#ff5252;text-shadow:0 0 6px rgba(255,82,82,.85),0 0 14px rgba(255,82,82,.5)}
+.meter-red::placeholder{color:#5c1f1f;text-shadow:none}
+
+body{background-image:repeating-linear-gradient(135deg,transparent 0 22px,rgba(128,128,128,.04) 22px 23px)}
+b,.big,.st,button,.tabs button{font-style:italic}
+button{color:var(--onac,#fff);clip-path:polygon(9px 0,100% 0,calc(100% - 9px) 100%,0 100%);border-radius:0;padding:11px 20px}
+button.g{color:var(--tx)}
+#toast button{color:var(--tx)}
+.tabs button{clip-path:none;border-radius:0;padding:14px}
+.card{border-radius:12px}
+#hdr{position:relative;overflow:hidden;background:repeating-linear-gradient(45deg,rgba(255,255,255,.025) 0 2px,transparent 2px 5px),linear-gradient(180deg,#171e29,#0a0e14);border-top:3px solid var(--ac)}
+#hdr button{color:var(--onac,#fff)}
+#gauge{margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#gauge svg{flex:1 1 170px;max-width:230px;height:auto;overflow:visible}
+.chips{flex:1 1 130px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.chip{border-left:3px solid var(--ac);background:rgba(255,255,255,.05);padding:6px 10px;font-size:14px;line-height:1.25}
+.chip .sub{margin:0;font-size:12px}
+.chip b{display:block;font-size:15px}
+@keyframes sweep{from{stroke-dashoffset:251.3}}
+.arc-go{animation:sweep 1.1s cubic-bezier(.2,.8,.2,1)}
+@media(prefers-reduced-motion:reduce){.arc-go{animation:none}}
+summary{cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.box{aspect-ratio:1;border:2px solid var(--bd);border-radius:12px;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px;text-align:center}
+.bicon{font-size:22px}
+.bname{font-size:10px;line-height:1.15;color:var(--tx);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.wn{background:var(--card);border:1px solid var(--bd);border-left:4px solid;border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:14px}
+#toast{display:none;position:fixed;left:12px;right:12px;bottom:calc(64px + env(safe-area-inset-bottom,0px));background:var(--tx);color:var(--bg);border-radius:12px;padding:8px 8px 8px 14px;align-items:center;justify-content:space-between;gap:10px;z-index:8;font-size:14px}
+#toast button{padding:6px 12px;background:var(--bg);color:var(--tx)}
+.stat{text-align:center}
+.li{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--bd);font-size:14px}
+.li button{padding:6px 10px;font-size:12px}
+
+/* ===== SPORT PRO UPGRADE ===== */
+:root{--ac2:color-mix(in srgb,var(--ac) 55%,#fff);--glow:color-mix(in srgb,var(--ac) 45%,transparent);--disp:'Barlow Condensed','Barlow Semi Condensed',system-ui,sans-serif}
+body{background-color:var(--bg);background-image:radial-gradient(900px 380px at 50% -120px,var(--glow),transparent 70%),repeating-linear-gradient(135deg,transparent 0 22px,rgba(128,128,128,.045) 22px 23px)}
+.wrap{padding-top:10px}
+.brand{display:flex;align-items:center;gap:10px;margin:2px 2px 12px}
+.brand .logo{width:34px;height:34px;display:grid;place-items:center;background:linear-gradient(135deg,var(--ac),var(--ac2));color:var(--onac,#fff);clip-path:polygon(22% 0,100% 0,78% 100%,0 100%);box-shadow:0 0 18px var(--glow)}
+.brand .logo svg{width:20px;height:20px;margin-left:-2px}
+.brand .t{font-family:var(--disp);font-weight:800;font-style:italic;font-size:26px;letter-spacing:.06em;text-transform:uppercase;line-height:1}
+.brand .t span{color:var(--ac)}
+.brand .tag{margin-left:auto;font:700 10px/1 var(--disp);letter-spacing:.2em;text-transform:uppercase;color:var(--mu);border:1px solid var(--bd);padding:5px 8px;border-radius:2px;display:flex;align-items:center;gap:6px}
+.brand .tag i{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);animation:pulse 1.8s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.card{position:relative;border-radius:4px 16px 4px 16px;border:1px solid var(--bd);background:linear-gradient(180deg,color-mix(in srgb,var(--card) 92%,#fff),var(--card));box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 8px 24px -14px rgba(0,0,0,.45)}
+.card>b:first-child,.card>.row>b:first-child,summary b,.brand .t{font-family:var(--disp);font-size:18px;letter-spacing:.07em;text-transform:uppercase}
+.card::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;background:var(--ac);border-radius:0 3px 3px 0;opacity:.85}
+#hdr{border-radius:4px 22px 4px 22px;border:1px solid #263243;border-top:3px solid var(--ac);box-shadow:0 0 0 1px rgba(255,255,255,.03) inset,0 14px 40px -18px var(--glow);background:radial-gradient(280px 160px at 78% 40%,var(--glow),transparent 70%),repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0 2px,transparent 2px 6px),linear-gradient(180deg,#18202c,#090c11)}
+#hdr::before{display:none}
+#hdr>.row>b{font-family:var(--disp);letter-spacing:.18em;text-transform:uppercase;font-size:13px;color:var(--ac2)}
+#hdr .meter{font-size:24px;border-radius:2px;border:1px solid #2a3647;background:linear-gradient(180deg,#02040a,#0b1018);box-shadow:inset 0 2px 8px #000}
+input,select,textarea{border-radius:3px 10px 3px 10px;border:1px solid var(--bd);transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--ac);box-shadow:0 0 0 3px var(--glow)}
+label{font-family:var(--disp);font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+button{background:linear-gradient(135deg,var(--ac),var(--ac2));font-family:var(--disp);font-size:15px;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 6px 18px -8px var(--glow);transition:transform .1s,filter .15s}
+button:active{transform:translateY(1px) scale(.985);filter:brightness(.92)}
+button.g{background:var(--tr);box-shadow:none}
+.bar{height:10px;background:var(--tr);border-radius:2px;transform:skewX(-18deg);position:relative;overflow:hidden}
+.bar i{border-radius:0;box-shadow:0 0 10px currentColor;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.bar::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 9px,var(--card) 9px 11px)}
+.st{font-family:var(--disp);letter-spacing:.14em;text-transform:uppercase;font-size:12px;padding:3px 9px;border:1px solid currentColor;border-radius:2px;display:inline-block;flex:0 0 auto;text-align:center}
+.big{font-family:var(--numfont);font-weight:400;font-style:normal;font-size:38px;letter-spacing:.02em}
+.stat{background:linear-gradient(180deg,rgba(128,128,128,.07),transparent);border-bottom:2px solid var(--ac);padding:8px 4px;border-radius:2px}
+.stat .sub{font-family:var(--disp);letter-spacing:.14em;text-transform:uppercase;font-size:11px;font-weight:700}
+.tabs{background:var(--card);border-top:1px solid var(--bd);justify-content:center;gap:0}
+.tabs button{background:none;box-shadow:none;font-family:var(--disp);font-size:13px;letter-spacing:.16em;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 12px;position:relative;max-width:173px}
+.tabs button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tabs button.on{box-shadow:none;color:var(--ac)}
+.tabs button.on::before{content:"";position:absolute;top:0;left:22%;right:22%;height:3px;background:var(--ac);box-shadow:0 0 14px var(--ac);transform:skewX(-30deg)}
+.tabs button.on svg{filter:drop-shadow(0 0 6px var(--ac))}
+.box{border-radius:3px 12px 3px 12px;border-width:2px;background:linear-gradient(180deg,rgba(128,128,128,.08),transparent),var(--card);transition:transform .12s}
+.box:active{transform:scale(.95)}
+.bname{font-family:var(--disp);font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-size:11px}
+.wn{border-radius:2px 10px 2px 10px;font-family:var(--disp);font-size:16px;letter-spacing:.03em;background:linear-gradient(90deg,rgba(128,128,128,.12),var(--card))}
+.chip{border-left-width:4px;background:linear-gradient(90deg,rgba(255,255,255,.09),rgba(255,255,255,.02));clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%);padding-right:16px}
+.chip .sub{font-family:var(--disp);text-transform:uppercase;letter-spacing:.15em;font-size:10px;font-weight:700}
+.chip b{font-family:var(--disp);font-size:17px;letter-spacing:.03em}
+.li{border-top:1px dashed var(--bd)}
+details>summary{list-style:none;display:flex;align-items:center;justify-content:space-between}
+details>summary::-webkit-details-marker{display:none}
+details.card>summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--ac);border-bottom:2px solid var(--ac);transform:rotate(45deg);transition:transform .2s;margin-right:4px}
+details.card[open]>summary::after{transform:rotate(-135deg)}
+.sheet{border-radius:22px 4px 0 0;border-top:3px solid var(--ac);box-shadow:0 -20px 50px -20px var(--glow)}
+
+.swatch{box-shadow:0 0 10px -2px currentColor}
+#toast{border-radius:3px 12px 3px 12px;border-left:4px solid var(--ac)}
+
+.rev{animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+@media(prefers-reduced-motion:reduce){#app>*,.brand .tag i{animation:none}}
+
+/* ===== TECH PACK: sparklines, ghost digits, boot, alerts ===== */
+.spk{display:block;margin:5px auto 0;overflow:visible}
+.big{position:relative;isolation:isolate}
+.big::before{content:attr(data-g);position:absolute;left:0;right:0;top:0;text-align:center;z-index:-1;opacity:.1;color:var(--tx)}
+#boot{position:fixed;inset:0;z-index:30;background:#05080c;color:#e8edf4;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;font-family:var(--numfont);transition:opacity .5s}
+#boot.out{opacity:0;pointer-events:none}
+#boot .bl{font-family:var(--disp);font-weight:800;font-style:italic;font-size:34px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px}
+#boot .bl span{color:var(--ac)}
+#boot .bs{font-size:12px;letter-spacing:.3em;color:#93a0b2;margin-bottom:22px}
+#boot .ln{width:100%;max-width:320px;display:flex;justify-content:space-between;font-size:14px;letter-spacing:.08em;padding:5px 0;border-bottom:1px dashed #1f2a38;opacity:0;animation:btin .25s forwards}
+#boot .ln b{font-style:normal}
+#boot .ok{color:#3ddc84}#boot .wa{color:#ffb340}#boot .er{color:#ff6b6b}
+#boot .pb{width:100%;max-width:320px;height:6px;margin-top:20px;background:#141a23;transform:skewX(-18deg);overflow:hidden}
+#boot .pb i{display:block;height:100%;width:0;background:var(--ac);box-shadow:0 0 12px var(--ac);animation:btbar 2.2s linear forwards}
+#boot .sk{margin-top:14px;font-size:10px;letter-spacing:.25em;color:#4b5a6e}
+@keyframes btin{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+@keyframes btbar{to{width:100%}}
+
+.hs{flex:1 1 100%;display:flex;gap:12px;align-items:center;border-left:4px solid var(--hc,var(--ac));background:linear-gradient(90deg,rgba(255,255,255,.09),rgba(255,255,255,.02));padding:8px 14px 8px 10px;clip-path:polygon(0 0,100% 0,calc(100% - 12px) 100%,0 100%)}
+#gauge .hs svg{flex:0 0 64px;width:64px;max-width:64px;height:64px}
+.hs .sub{font-family:var(--disp);text-transform:uppercase;letter-spacing:.15em;font-size:10px;font-weight:700;margin:0}
+.hs b{font-family:var(--disp);font-size:20px;letter-spacing:.06em;text-transform:uppercase;display:block;line-height:1.1}
+.hs .why{font-family:var(--disp);font-size:13px;letter-spacing:.03em;text-transform:none;color:#93a0b2;font-weight:600}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,700;1,800&family=Barlow+Semi+Condensed:ital,wght@0,500;0,600;0,700;1,600;1,700&family=Share+Tech+Mono&family=Space+Mono:wght@400;700&display=swap"></head><body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<div class="wrap"><div class="brand"><div class="logo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></div><div class="t">Bike<span>Tracker</span></div><div class="tag"><i></i>Pro</div></div><div id="hdrwrap"></div><div class="card" id="hdr"><div class="row" style="align-items:center"><b style="flex:0 0 auto">Odometer</b><input id="odo" class="meter meter-blue" type="number" inputmode="numeric" placeholder="current km"><button onclick="setOdo()" style="flex:0 0 auto">Update</button></div><div class="sub" id="oage"></div><div id="gauge"></div></div><div id="warn"></div><div id="app"></div></div><div id="toast"></div>
+<div class="tabs"><button data-t="s" onclick="go('s')"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>Service</button><button data-t="f" onclick="go('f')"><svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M4 21h10M14 10h2a2 2 0 0 1 2 2v4a1.5 1.5 0 0 0 3 0V8l-3-3M7 8h4"/></svg>Fuel</button><button data-t="t" onclick="go('t')"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Trip</button></div>
+<script>
+const KEY='bikeTracker.v1';
+const OILS={'Mineral':{km:1500,days:90},'Semi-synthetic':{km:2500,days:120},'Fully synthetic':{km:4000,days:180}};
+const DEF=[
+{id:'oil',name:'Engine oil',icon:'🛢️',km:1500,days:90,type:'Mineral'},
+{id:'tune',name:'Tuning / full service',icon:'🔧',km:3000,days:120},
+{id:'chain',name:'Chain lube',icon:'⛓️',km:500,days:30},
+{id:'chainadj',name:'Chain clean & adjust',icon:'⚙️',km:1500,days:90},
+{id:'brake',name:'Brake pads',icon:'🛑',km:10000,days:365},
+{id:'air',name:'Air filter',icon:'💨',km:6000,days:180},
+{id:'plug',name:'Spark plug',icon:'⚡',km:8000,days:365},
+{id:'tyre',name:'Tyres (check / replace)',icon:'🛞',km:20000,days:730}];
+let DB,S,tab='f';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+const dd=(a,b)=>Math.round((new Date(b)-new Date(a))/864e5);
+const add=(d,n)=>{const x=new Date(d);x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)};
+const fmt=n=>Math.round(n).toLocaleString();
+function fresh(name){return{name:name||'My bike',odo:{km:0,date:null},items:DEF.map(x=>({...x,lastKm:null,lastDate:null,note:''})),fuel:[],reserve:[],trips:[],log:[],olog:[]}}
+function fixBike(b){b.reserve=b.reserve||[];b.trips=b.trips||[];b.log=b.log||[];b.olog=b.olog||(b.odo.date?[{km:b.odo.km,date:b.odo.date}]:[]);return b}
+function load(){
+  let raw=null;try{raw=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+  if(raw&&raw.bikes){DB=raw}
+  else if(raw&&raw.items){DB={activeId:'b1',order:['b1'],nextId:2,bikes:{b1:raw}}}
+  else{DB={activeId:'b1',order:['b1'],nextId:2,bikes:{b1:fresh('My bike')}}}
+  Object.values(DB.bikes).forEach(fixBike);
+  S=DB.bikes[DB.activeId];
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(DB))}catch(e){}}
+const THEMES=['#e5173f','#ff6a00','#f5b800','#b6f000','#00c2a8','#1e90ff','#8b5cf6','#ff3d9a','#9aa4b2'];
+const UNDO_MS=120000;
+function applyTheme(){
+  const R=document.documentElement.style;
+  if(DB.theme&&THEMES.includes(DB.theme)){R.setProperty('--ac',DB.theme);const n=parseInt(DB.theme.slice(1),16),L=(.299*(n>>16)+.587*((n>>8)&255)+.114*(n&255))/255;R.setProperty('--onac',L>.62?'#10151c':'#fff')}
+  else{R.removeProperty('--ac');R.removeProperty('--onac')}
+  if(DB.scheme==null&&DB.forceDark)DB.scheme='dark';
+  if(DB.scheme==='dark')document.documentElement.setAttribute('data-theme','dark');
+  else if(DB.scheme==='light')document.documentElement.setAttribute('data-theme','light');
+  else document.documentElement.removeAttribute('data-theme');
+}
+function setTheme(c){DB.theme=c;save();applyTheme();render()}
+function setScheme(v){DB.scheme=v;save();applyTheme();render()}
+function switchBike(id){if(DB.bikes[id]){DB.activeId=id;S=DB.bikes[id];save();render()}}
+function addBike(){const id='b'+(DB.nextId++);DB.bikes[id]=fresh('New bike');DB.order.push(id);DB.activeId=id;S=DB.bikes[id];save();render()}
+function askDelBike(id){
+  const m=document.createElement('div');m.className='modal';m.id='m';
+  m.innerHTML=`<div class="sheet"><b style="font-size:18px">Delete “${esc(DB.bikes[id].name||'this bike')}”?</b><div class="sub" style="margin-top:6px">This removes all its reminders, fuel log and trip history. This can't be undone.</div><div class="row" style="margin-top:14px"><button class="g" onclick="closeM()">Cancel</button><button style="background:var(--er)" onclick="delBike('${id}');closeM()">Delete</button></div></div>`;
+  document.body.appendChild(m);
+}
+function delBike(id){
+  if(DB.order.length<2)return;
+  delete DB.bikes[id];DB.order=DB.order.filter(x=>x!==id);
+  if(DB.activeId===id){DB.activeId=DB.order[0];S=DB.bikes[DB.activeId]}
+  save();render();
+}
+function header(){
+  const opts=DB.order.map(id=>`<option value="${id}" ${id===DB.activeId?'selected':''}>${esc(DB.bikes[id].name||'Bike')}</option>`).join('');
+  return `<div class="card"><div class="row" style="align-items:center;gap:8px"><input id="bname" placeholder="Bike name" maxlength="40" style="flex:2;border:0;background:transparent;font-size:17px;font-weight:700;padding:4px" oninput="S.name=this.value;save()" value="${esc(S.name||'')}"><select id="bikesel" style="flex:0 0 auto;width:auto" onchange="switchBike(this.value)">${opts}</select><button class="g" style="flex:0 0 auto" onclick="addBike()">+ Bike</button></div></div>`;
+}
+function go(t){tab=t;render()}
+function avgRows(){const useR=resPts().length>0,f=calc(),c=useR?rcalc():f;return useR?c.rows:c.rows.filter(x=>x.eff).map(x=>({...x,at:x.km}))}
+let gaugeDone=false,gAnim=false,gF=0,bootMs=0;
+const gh=v=>String(v).replace(/[0-9]/g,'8');
+function spark(v,w=72,h=20){
+  v=(v||[]).filter(x=>isFinite(x));if(v.length<2)return '';
+  let lo=Math.min(...v),hi=Math.max(...v);if(hi-lo<1e-9){lo-=1;hi+=1}
+  const X=i=>2+i*(w-4)/(v.length-1),Y=y=>2+(hi-y)*(h-4)/(hi-lo),p=v.map((y,i)=>X(i).toFixed(1)+','+Y(y).toFixed(1)).join(' ');
+  return `<svg class="spk" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polygon points="${X(0).toFixed(1)},${h} ${p} ${X(v.length-1).toFixed(1)},${h}" fill="var(--ac)" opacity=".15"/><polyline points="${p}" fill="none" stroke="var(--ac)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${X(v.length-1).toFixed(1)}" cy="${Y(v[v.length-1]).toFixed(1)}" r="2" fill="var(--ac)"/></svg>`;
+}
+function anomaly(){
+  const ar=avgRows();if(ar.length<3)return null;
+  const last=ar[ar.length-1],prev=ar.slice(-6,-1),base=prev.reduce((s,x)=>s+x.eff,0)/prev.length,drop=(base-last.eff)/base;
+  if(drop<.15||S.ad===last.at)return null;
+  return{drop,base,v:last.eff,at:last.at};
+}
+
+function dismissAnom(){const a=anomaly();if(a){S.ad=a.at;save();render()}}
+function anomHtml(){
+  const a=anomaly();if(!a)return '';
+  return `<div class="wn" style="border-left-color:var(--er);display:flex;align-items:center;justify-content:space-between;gap:10px"><div><b style="color:var(--er)">▼ Fuel average dropped ${Math.round(a.drop*100)}%</b><div class="sub">${a.v.toFixed(1)} km/L vs usual ${a.base.toFixed(1)}. Check tyre pressure, chain tension and air filter.</div></div><button class="g" onclick="dismissAnom()">OK</button></div>`;
+}
+function boot(){
+  if(!bootMs)return;
+  const E=est(),ar=avgRows(),v=ar.length?ar[ar.length-1].eff:null,an=anomaly(),
+    due=S.items.filter(isOn).map(info).filter(i=>i.s==='over'||i.s==='soon').length;
+  const L=[['ODOMETER',E?fmt(E)+' KM':'NOT SET',E?'ok':'wa'],['FUEL SYSTEM',v?v.toFixed(1)+' KM/L':'NO DATA',v?'ok':'wa'],['SERVICE',due?due+' DUE':'ALL CLEAR',due?'wa':'ok'],['GPS TRACKER','STANDBY','ok'],['ANOMALY SCAN',an?'ALERT -'+Math.round(an.drop*100)+'%':'NOMINAL',an?'er':'ok']];
+  const m=document.createElement('div');m.id='boot';
+  m.innerHTML=`<div class="bl">Bike<span>Tracker</span></div><div class="bs">SYSTEM CHECK · ${esc((S.name||'MY BIKE').toUpperCase())}</div>`+L.map((x,i)=>`<div class="ln" style="animation-delay:${(.3+i*.38).toFixed(2)}s"><span>${x[0]}</span><b class="${x[2]}">${esc(x[1])}</b></div>`).join('')+'<div class="pb"><i></i></div><div class="sk">TAP TO SKIP</div>';
+  const end=()=>{m.classList.add('out');setTimeout(()=>m.remove(),600)};
+  m.onclick=end;document.body.appendChild(m);setTimeout(end,2500);
+}
+
+function gApply(){const a=document.getElementById('garc'),n=document.getElementById('gnd');if(a)a.setAttribute('stroke-dashoffset',(251.3*(1-gF)).toFixed(1));if(n)n.setAttribute('transform','rotate('+((gF-.5)*180).toFixed(1)+' 100 100)')}
+function gaugeRun(target){
+  gAnim=true;gF=0;
+  const seg=[[0,1,950],[1,0,850],[0,target,950]],ease=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;let i=0,t0=null;
+  function step(ts){
+    if(t0==null)t0=ts;
+    const a=seg[i][0],b=seg[i][1],x=Math.min(1,(ts-t0)/seg[i][2]);
+    gF=a+(b-a)*ease(x);gApply();
+    if(x>=1){i++;t0=null;if(i>=seg.length){gAnim=false;gF=target;render();return}}
+    requestAnimationFrame(step);
+  }
+  setTimeout(()=>requestAnimationFrame(step),bootMs);
+}
+function cluster(){
+  const ar=avgRows(),v=ar.length?ar[ar.length-1].eff:null,max=Math.max(40,Math.ceil((v||0)*1.3/10)*10),fr=v==null?0:Math.min(1,v/max);
+  const pt=(f,r)=>[100-r*Math.cos(Math.PI*f),100-r*Math.sin(Math.PI*f)];
+  let t='';for(let k=0;k<=20;k++){if(k%5){const f=k/20,a=pt(f,92),b=pt(f,87);t+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#3a4658" stroke-width="1"/>`}}
+  for(let k=0;k<=4;k++){const f=k/4,a=pt(f,92),b=pt(f,84),c=pt(f,104);t+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#6b7788" stroke-width="2"/><text x="${c[0].toFixed(1)}" y="${(c[1]+3).toFixed(1)}" text-anchor="middle" font-size="9" fill="#93a0b2">${Math.round(max*f)}</text>`}
+  if(!gaugeDone){gaugeDone=true;if(!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))gaugeRun(fr)}
+  const gf=gAnim?gF:fr,show=v!=null||gAnim;
+  const svg=`<svg viewBox="0 -8 200 160" role="img" aria-label="Latest fuel average"><defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="var(--ac)" stop-opacity=".45"/><stop offset="1" stop-color="var(--ac)"/></linearGradient></defs><path d="M20,100 A80,80 0 0 1 180,100" fill="none" stroke="#222d3b" stroke-width="12" stroke-linecap="round"/>${show?`<path id="garc" d="M20,100 A80,80 0 0 1 180,100" fill="none" stroke="url(#gg)" stroke-width="12" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="${(251.3*(1-gf)).toFixed(1)}" style="filter:drop-shadow(0 0 6px var(--ac))"/><g id="gnd" transform="rotate(${((gf-.5)*180).toFixed(1)} 100 100)" style="filter:drop-shadow(0 0 5px var(--ac))"><polygon points="96.2,100 100,24 103.8,100 100,111" fill="#fff"/><polygon points="100,24 103.8,100 100,111" fill="var(--ac)" opacity=".55"/></g><circle cx="100" cy="100" r="8" fill="#10151c" stroke="var(--ac)" stroke-width="3"/><circle cx="100" cy="100" r="2.5" fill="#fff"/>`:''}${t}<text x="100" y="134" text-anchor="middle" font-size="28" fill="#f3f6fa" opacity=".1" style="font-family:var(--numfont);font-style:normal">88.8</text><text x="100" y="134" text-anchor="middle" font-size="28" fill="#f3f6fa" style="font-family:var(--numfont);font-style:normal">${v==null?'--':v.toFixed(1)}</text><text x="100" y="147" text-anchor="middle" font-size="10" fill="#93a0b2" style="font-style:italic;font-weight:600;letter-spacing:.12em">${v==null?'REFUEL TO SEE KM/L':'KM/L · LATEST'}</text></svg>`;
+  const nx=S.items.filter(isOn).map(it=>({it,i:info(it)})).filter(x=>x.i.s!=='none').sort((a,b)=>b.i.p-a.i.p)[0];
+  const col=!nx?'#93a0b2':nx.i.s==='over'?'#ff6b6b':nx.i.s==='soon'?'#ffb340':'#3ddc84';
+  const c1=nx?`<div class="chip" style="border-color:${col}"><div class="sub">Next service</div><b>${nx.it.icon} ${esc(nx.it.name)}</b><span style="color:${col}">${nx.i.s==='over'?'Overdue':left(nx.i)}</span></div>`:`<div class="chip"><div class="sub">Next service</div><b>Nothing tracked yet</b></div>`;
+  const mf=monthFuel(),c2=`<div class="chip"><div class="sub">Fuel this month</div><b>${+mf.l.toFixed(1)} L</b>${spark(S.fuel.slice(-8).map(e=>e.l),64,16)}</div>`,an=anomaly(),c3=an?`<div class="chip" style="border-color:var(--er)"><div class="sub">Fuel alert</div><b style="color:var(--er)">▼ ${Math.round(an.drop*100)}% drop</b></div>`:'';
+  return svg+`<div class="chips">${c1}${c2}${c3}</div>`;
+}
+function render(){
+  if(!$('bname')||(document.activeElement!==$('bname')&&document.activeElement!==$('bikesel')))$('hdrwrap').innerHTML=header();
+  $('app').innerHTML=tab==='s'?svc():tab==='f'?fuel():trip();
+  if(document.activeElement!==$('odo'))$('odo').value=est()||'';
+  const ag=S.odo.date?dd(S.odo.date,today()):null,rt=rate();
+  $('oage').textContent=ag==null?'Enter your current km to start.':(ag>0&&rt)?'Estimated from your usual riding (~'+Math.round(rt)+' km/day). Enter your real reading whenever you like to correct it.':ag===0?'Updated today.':'Updated '+ag+' day(s) ago.';
+  const w=S.items.filter(isOn).map(it=>({it,i:info(it)})).filter(x=>x.i.s==='over'||x.i.s==='soon');
+  $('warn').innerHTML=anomHtml()+w.slice(0,4).map(({it,i})=>`<div class="wn" style="border-left-color:${i.s==='over'?'var(--er)':'var(--wa)'}" onclick="go('s')">${i.s==='over'?'🔴':'🟠'} <b>${esc(it.name)}</b> ${when(i)}</div>`).join('');
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
+  $('gauge').innerHTML=cluster();
+}
+const CORE=['oil','tune','chain'];
+const isOn=it=>it.on!==undefined?it.on:(CORE.includes(it.id)||it.lastKm!=null);
+function setO(km){const d=today();S.odo={km,date:d};S.olog=(S.olog||[]).filter(x=>x.date!==d);S.olog.push({km,date:d});S.olog=S.olog.slice(-40)}
+function rate(){const L=S.olog||[];if(L.length<2)return 0;const a=L[Math.max(0,L.length-8)],b=L[L.length-1],d=dd(a.date,b.date);return d>=3&&b.km>a.km?(b.km-a.km)/d:0}
+function est(){const d=S.odo.date?Math.min(45,Math.max(0,dd(S.odo.date,today()))):0;return S.odo.km+Math.round(rate()*d)}
+function info(it){
+  const hk=it.km>0&&it.lastKm!=null,hd=it.days>0&&!!it.lastDate;
+  if(!hk&&!hd)return{p:-1,s:'none'};
+  const E=est();let p=0,remKm=null,remD=null;
+  if(hk){remKm=it.lastKm+it.km-E;p=(E-it.lastKm)/it.km}
+  if(hd){remD=dd(today(),add(it.lastDate,it.days));p=Math.max(p,dd(it.lastDate,today())/it.days)}
+  const wk=it.wk!=null?it.wk:Math.max(100,.15*it.km),wd=it.wd!=null?it.wd:7;
+  const s=((remKm!=null&&remKm<0)||(remD!=null&&remD<0))?'over':((remKm!=null&&remKm<=wk)||(remD!=null&&remD<=wd))?'soon':'ok';
+  return{p,remKm,remD,s};
+}
+const PRE={
+ 'Small commuter (70–125cc)':{oil:[1500,90],tune:[3000,120],chain:[500,30],chainadj:[1500,90],brake:[10000,365],air:[6000,180],plug:[8000,365],tyre:[20000,730],t:'Mineral'},
+ 'Mid-size (150–250cc)':{oil:[2500,120],tune:[5000,180],chain:[500,30],chainadj:[1500,90],brake:[12000,365],air:[8000,180],plug:[10000,365],tyre:[20000,730],t:'Semi-synthetic'},
+ 'Large (300cc and up)':{oil:[4000,180],tune:[8000,240],chain:[500,30],chainadj:[1000,60],brake:[15000,365],air:[10000,365],plug:[12000,365],tyre:[20000,730],t:'Fully synthetic'}};
+const bikeSel=()=>`<label>Bike type (loads typical intervals)</label><select onchange="preset(this.value)"><option value="">Choose…</option>${Object.keys(PRE).map(k=>`<option ${S.cls===k?'selected':''}>${k}</option>`).join('')}</select>`;
+function preset(k){
+  const P=PRE[k];if(!P)return;
+  S.items.forEach(it=>{if(P[it.id]){it.km=P[it.id][0];it.days=P[it.id][1]}});
+  const o=S.items.find(x=>x.id==='oil');if(o)o.type=P.t;
+  S.cls=k;save();render();
+}
+function addRem(id){S.items.find(x=>x.id===id).on=true;save();render()}
+function remRem(id){S.items.find(x=>x.id===id).on=false;closeM();save();render()}
+function startToday(){
+  if(!est()){$('oage').textContent='Enter your current km first, then tap Update.';return}
+  S.items.filter(isOn).forEach(it=>{if(it.lastKm==null){it.on=true;it.lastKm=est();it.lastDate=today()}});
+  save();render();
+}
+let tt=null,okOpen=false,setOpen=false,hisOpen=false;
+const snap=it=>({lastKm:it.lastKm,lastDate:it.lastDate,note:it.note,on:it.on,km:it.km,days:it.days,type:it.type});
+const canUndo=it=>it.undo&&Date.now()-it.undo.t<UNDO_MS;
+const dbtn=(it,full)=>canUndo(it)?`<button class="g" style="${full?'width:100%;margin-top:10px;':''}border:1px solid var(--wa)" onclick="undoDone('${it.id}')">↩ Undo</button>`:full?`<button style="width:100%;margin-top:10px" onclick="doneNow('${it.id}')">✓ Done</button>`:`<button class="g" onclick="doneNow('${it.id}')">Done</button>`;
+function toast(m,id){const t=$('toast');t.innerHTML='<span>'+esc(m)+'</span>'+(id?`<button onclick="undoDone('${id}')">Undo</button>`:'');t.style.display='flex';clearTimeout(tt);tt=setTimeout(()=>{t.style.display='none'},7000)}
+function undoDone(id){
+  const it=S.items.find(x=>x.id===id);
+  if(it&&it.undo){
+    if(it.undo.logAt)S.log=S.log.filter(l=>l.at!==it.undo.logAt);
+    Object.assign(it,it.undo.prev);delete it.undo;save();$('toast').style.display='none';render();
+  }
+}
+function mark(it,extra,price){
+  const at=Date.now();
+  it.undo={prev:snap(it),t:at,logAt:at};
+  Object.assign(it,extra,{on:true,lastKm:est(),lastDate:today()});
+  S.log.push({at,id:it.id,name:it.name,date:today(),km:est(),price:price||0});
+  okOpen=true;save();
+}
+function doneNow(id){
+  const it=S.items.find(x=>x.id===id);
+  costSheet(id,id==='oil'?null:'');
+}
+function costSheet(id,oilPreset){
+  const it=S.items.find(x=>x.id===id);
+  const m=document.createElement('div');m.className='modal';m.id='m';
+  m.innerHTML=`<div class="sheet"><b style="font-size:18px">${it.icon} ${esc(it.name)}</b>
+  ${id==='oil'?`<label>Oil used</label><select id="cso">${Object.keys(OILS).map(k=>`<option>${k}</option>`).join('')}</select>`:''}
+  <label>Cost (optional, leave empty if none)</label><input id="csc" type="number" inputmode="decimal" placeholder="e.g. 800">
+  <div class="row" style="margin-top:14px"><button class="g" onclick="closeM()">Cancel</button><button onclick="confirmDone('${id}')">✓ Done</button></div></div>`;
+  document.body.appendChild(m);
+}
+function confirmDone(id){
+  const it=S.items.find(x=>x.id===id),price=+($('csc')?$('csc').value:0)||0;
+  if(id==='oil'){const t=$('cso').value;mark(it,{type:t,km:OILS[t].km,days:OILS[t].days,note:t},price)}
+  else mark(it,{},price);
+  closeM();toast(it.name+' done. You can undo it for 2 minutes.',id);render();
+}
+function dueDay(it,i){
+  const r=rate(),c=[];
+  if(r>0&&i.remKm!=null)c.push(add(today(),Math.max(0,Math.round(i.remKm/r))));
+  if(i.remD!=null)c.push(add(today(),Math.max(0,i.remD)));
+  return c.sort()[0]||null;
+}
+function cal(it,i){
+  const d=dueDay(it,i);if(!d)return '';
+  let a=add(d,-3);if(a<=today())a=add(today(),1);
+  const f=x=>x.replace(/-/g,''),t=encodeURIComponent('🏍️ Bike: '+it.name+' is due soon');
+  return `<a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=${t}&dates=${f(a)}/${f(add(a,1))}&details=${encodeURIComponent('Open Bike Tracker and tap Done when finished: '+LINK)}" target="_blank" rel="noopener" style="font-size:13px;color:var(--ac)">🔔 Add phone reminder</a>`;
+}
+const when=i=>i.s==='over'?'is overdue':'due in '+[i.remKm!=null?fmt(Math.max(i.remKm,0))+' km':null,i.remD!=null?Math.max(i.remD,0)+' days':null].filter(Boolean).join(' or ');
+function card(it,i){
+  let col='var(--ok)',st='OK',line='';
+  if(i.s==='none'){col='var(--mu)';st='Not set';line='Tap Done if you just did this. For an older date, use Settings.'}
+  else{
+    if(i.s==='over'){col='var(--er)';st='Overdue'}else if(i.s==='soon'){col='var(--wa)';st='Due soon'}
+    line=left(i)+(i.remKm!=null?'<br>Next at '+fmt(it.lastKm+it.km)+' km':'<br>Due on '+add(it.lastDate,it.days));
+  }
+  return `<div class="card"><div class="row" style="align-items:center"><b>${it.icon} ${esc(it.name)}</b><span class="st" style="color:${col}">${st}</span></div><div class="bar"><i style="width:${Math.min(Math.max(i.p,0),1)*100}%;background:${col}"></i></div><div class="sub">${line}</div>${it.note?`<div class="sub">Last used: ${esc(it.note)}</div>`:''}${dbtn(it,1)}${i.s!=='none'?'<div style="margin-top:8px">'+cal(it,i)+'</div>':''}</div>`;
+}
+function box(it,i){
+  const col=i.s==='over'?'var(--er)':i.s==='soon'?'var(--wa)':'var(--mu)';
+  return `<div class="box" style="border-color:${col}" onclick="openInfo('${it.id}')"><div class="bicon">${it.icon}</div><div class="bname">${esc(it.name)}</div></div>`;
+}
+function openInfo(id){
+  const it=S.items.find(x=>x.id===id),i=info(it);
+  let col='var(--ok)',st='OK',line='';
+  if(i.s==='none'){col='var(--mu)';st='Not set';line='Tap Done if you just did this. For an older date, use Settings.'}
+  else{
+    if(i.s==='over'){col='var(--er)';st='Overdue'}else if(i.s==='soon'){col='var(--wa)';st='Due soon'}
+    line=left(i)+(i.remKm!=null?'<br>Next at '+fmt(it.lastKm+it.km)+' km':it.lastDate?'<br>Due on '+add(it.lastDate,it.days):'');
+  }
+  const m=document.createElement('div');m.className='modal';m.id='m';
+  const bd=canUndo(it)?`<button class="g" style="width:100%;margin-top:10px;border:1px solid var(--wa)" onclick="undoDone('${it.id}');closeM()">↩ Undo</button>`:`<button style="width:100%;margin-top:10px" onclick="closeM();costSheet('${it.id}')">✓ Done</button>`;
+  m.innerHTML=`<div class="sheet"><div class="row" style="align-items:center"><b style="font-size:18px">${it.icon} ${esc(it.name)}</b><span class="st" style="color:${col}">${st}</span></div><div class="sub" style="margin-top:8px">${line}</div>${it.note?`<div class="sub">Last used: ${esc(it.note)}</div>`:''}${bd}${i.s!=='none'?'<div style="margin-top:10px">'+cal(it,i)+'</div>':''}<button class="g" style="width:100%;margin-top:14px" onclick="closeM()">Close</button></div>`;
+  document.body.appendChild(m);
+}
+function svc(){
+  const its=S.items.filter(isOn).map(it=>({it,i:info(it)})).sort((a,b)=>b.i.p-a.i.p);
+  const setup=!S.items.some(x=>x.lastKm!=null);
+  const noOdo=!S.odo.date;
+  const need=its.filter(x=>x.i.s!=='ok'),ok=its.filter(x=>x.i.s==='ok');
+  let h='';
+  if(noOdo)h+=`<div class="card"><b>👋 “${esc(S.name||'This bike')}” isn't set up yet</b><div class="sub">Enter your current km above and tap Update to get started.</div></div>`;
+  else if(!need.length)h+=`<div class="card"><b style="color:var(--ok)">✓ All good</b><div class="sub">Nothing needs attention. You'll see a warning here before anything is due.</div></div>`;
+  if(need.length)h+=`<div class="grid">${need.map(({it,i})=>box(it,i)).join('')}</div>`;
+  if(ok.length){
+    h+=`<details class="card" ${okOpen?'open':''} ontoggle="okOpen=this.open"><summary><b>On track (${ok.length})</b></summary>`;
+    for(const {it,i} of ok)h+=`<div class="li"><div>${it.icon} ${esc(it.name)}<div class="sub">${left(i)}${canUndo(it)?'<br>✓ Marked done. Undo is available for 2 minutes.':''}<br>${cal(it,i)}</div></div>${dbtn(it)}</div>`;
+    h+=`</details>`;
+  }
+  if(S.log.length){
+    const tot=S.log.reduce((t,e)=>t+(e.price||0),0);
+    h+=`<details class="card" ${hisOpen?'open':''} ontoggle="hisOpen=this.open"><summary><b>🧾 Service history (${S.log.length})</b></summary>${tot?`<div class="sub" style="margin-top:6px">Total spent: ${fmt(tot)}</div>`:''}`;
+    for(const e of [...S.log].reverse().slice(0,50)){const it=S.items.find(x=>x.id===e.id);
+      h+=`<div class="li"><div>${it?it.icon+' ':''}<b>${esc(e.name)}</b><div class="sub">${fmt(e.km)} km · ${esc(e.date)}${e.price?' · cost '+fmt(e.price):''}</div></div></div>`}
+    h+=`</details>`;
+  }
+  const off=S.items.filter(x=>!isOn(x)),f=x=>x.replace(/-/g,''),a=add(today(),1);
+  const wk=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('🏍️ Bike check: update km')}&details=${encodeURIComponent('Open Bike Tracker, update your km and tap Done on finished jobs: '+LINK)}&dates=${f(a)}/${f(add(a,1))}&recur=${encodeURIComponent('RRULE:FREQ=WEEKLY')}`;
+  h+=`<details class="card" ${setOpen?'open':''} ontoggle="setOpen=this.open"><summary><b>⚙️ Settings</b></summary>
+  <label>📌 Quick-open shortcuts</label><div class="sub">Add these as separate Home Screen icons (share/bookmark each link) to jump straight to a tab, skipping the home screen:</div>
+  <div class="li"><div>⛽ Straight to Refuel</div><a style="padding:6px 12px;border-radius:8px;text-decoration:none;color:var(--tx);background:var(--tr)" href="${LINK}#refuel">Copy link</a></div>
+  <div class="li"><div>🛣️ Straight to Trip</div><a style="padding:6px 12px;border-radius:8px;text-decoration:none;color:var(--tx);background:var(--tr)" href="${LINK}#trip">Copy link</a></div>
+  <label style="margin-top:14px">🏍️ Your bikes</label>`;
+  for(const id of DB.order)h+=`<div class="li"><div>${id===DB.activeId?'▶ ':''}${esc(DB.bikes[id].name||'Bike')}</div><div style="display:flex;gap:6px">${id!==DB.activeId?`<button class="g" onclick="switchBike('${id}')">Switch</button>`:''}${DB.order.length>1?`<button class="g" onclick="askDelBike('${id}')">Delete</button>`:''}</div></div>`;
+  h+=`<button class="g" style="width:100%;margin-top:8px" onclick="addBike()">+ Add another bike</button>`;
+  if(setup)h+=`<label style="margin-top:16px">👋 Quick setup for “${esc(S.name||'this bike')}”</label>${bikeSel()}<button style="width:100%;margin-top:10px" onclick="startToday()">Start tracking from today</button><div class="sub">Not serviced recently? Use Edit below, once started, to enter the real last date.</div>`;
+  h+=`<label style="margin-top:16px">Your reminders. Edit changes settings, Remove moves it back to “Add a reminder”</label>`;
+  for(const it of S.items.filter(isOn))h+=`<div class="li"><div>${it.icon} ${esc(it.name)}<div class="sub">every ${[it.km?fmt(it.km)+' km':'',it.days?it.days+' days':''].filter(Boolean).join(' / ')}</div></div><div style="display:flex;gap:6px"><button class="g" onclick="openDone('${it.id}')">Edit</button><button class="g" onclick="remRem('${it.id}')">Remove</button></div></div>`;
+  h+=(setup?'':`<label>Bike type preset</label>`+bikeSel());
+  h+='<label>Add a reminder</label>';
+  for(const it of off)h+=`<div class="li"><div>${it.icon} ${esc(it.name)}</div><div style="display:flex;gap:6px"><button onclick="addRem('${it.id}')">Add</button>${it.custom?`<button class="g" onclick="delRem('${it.id}')">Delete</button>`:''}</div></div>`;
+  h+=`<button class="g" style="width:100%;margin-top:10px" onclick="openNew()">＋ Create your own reminder</button>`;
+  h+=`<label>📱 Use it like an app</label><div class="sub">Add this page to your Home Screen: in Chrome tap ⋮ then “Add to Home screen”. On iPhone tap Share then “Add to Home Screen”. To get pinged without opening it, add a weekly reminder to your calendar:</div><a href="${wk}" target="_blank" rel="noopener" style="display:block;margin-top:8px;color:var(--ac)">🔔 Add weekly bike-check reminder</a>`;
+  h+=`<label>📊 Expense report</label><div class="sub">Excel workbook: one sheet per month (fuel + service costs), a Summary sheet, keeps only the latest 5 months.</div><button class="g" style="width:100%;margin-top:8px" onclick="exportReport()">Export Excel report</button><div class="sub" id="em"></div>
+  <label>Backup (your data lives in this phone's browser)</label><textarea id="bt" rows="3" placeholder="Backup text appears here. To restore, paste it here."></textarea><div class="row" style="margin-top:8px"><button class="g" onclick="bk()">Show / copy backup</button><button class="g" onclick="rs()">Restore</button></div><div class="sub" id="bm"></div>
+  <label style="margin-top:16px">🎨 App theme color</label><div>${THEMES.map(c=>`<span class="swatch ${((THEMES.includes(DB.theme)?DB.theme:THEMES[0])===c)?'on':''}" style="background:${c}" onclick="setTheme('${c}')"></span>`).join(' ')}</div>
+  <label style="margin-top:14px">🌗 App color (light / dark)</label><div class="sub">Pick white or black, or leave on Auto to follow your phone.</div><div style="margin-top:4px">
+  <span class="swatch scheme ${(!DB.scheme||DB.scheme==='auto')?'on':''}" style="background:linear-gradient(135deg,#fff 50%,#111 50%)" onclick="setScheme('auto')" title="Auto"></span>
+  <span class="swatch scheme ${DB.scheme==='light'?'on':''}" style="background:#fff" onclick="setScheme('light')" title="White"></span>
+  <span class="swatch scheme ${DB.scheme==='dark'?'on':''}" style="background:#111" onclick="setScheme('dark')" title="Black"></span>
+  </div></details>`;
+  return h;
+}
+const LINK='https://claude.ai/artifact/3PyUU571xoRYQATxcw7MSq';
+function openNew(){
+  const m=document.createElement('div');m.className='modal';m.id='m';
+  m.innerHTML=`<div class="sheet"><b style="font-size:18px">＋ New reminder</b>
+  <label>Name</label><input id="nn" placeholder="e.g. Insurance renewal, Battery check">
+  <label>Icon</label><select id="ni">${['🔧','🔩','🧴','🔋','💡','🧽','📄','🛞','⛽','🪖'].map(e=>`<option>${e}</option>`).join('')}</select>
+  <label>Repeat every (km). Leave empty if only by time</label><input id="ik" class="meter meter-green" type="number" inputmode="numeric" placeholder="e.g. 3000">
+  <label>Repeat every (days). Leave empty if only by km</label><input id="iy" type="number" inputmode="numeric" placeholder="e.g. 365">
+  <label>Warn me when this many km are left</label><input id="wk" class="meter meter-red" type="number" inputmode="numeric" placeholder="default: 15% of the interval">
+  <label>Warn me when this many days are left</label><input id="wd" type="number" inputmode="numeric" placeholder="default: 7">
+  <label>Last done at (km). Empty means starting now</label><input id="dk" class="meter meter-blue" type="number" inputmode="numeric">
+  <label>Last done on (date). Empty means today</label><input id="dt" type="date">
+  <div class="sub" id="nmsg" style="color:var(--er)"></div>
+  <div class="row" style="margin-top:14px"><button class="g" onclick="closeM()">Cancel</button><button onclick="addCustom()">Add reminder</button></div></div>`;
+  document.body.appendChild(m);
+}
+function addCustom(){
+  const name=$('nn').value.trim(),km=+$('ik').value||0,days=+$('iy').value||0,n=v=>v===''?null:+v,msg=t=>{$('nmsg').textContent=t};
+  if(!name){msg('Give it a name.');return}
+  if(!km&&!days){msg('Enter how often: km, days, or both.');return}
+  S.items.push({id:'c'+Date.now(),name,icon:$('ni').value,km,days,wk:n($('wk').value),wd:n($('wd').value),lastKm:$('dk').value===''?est():+$('dk').value,lastDate:$('dt').value||today(),note:'',on:true,custom:true});
+  save();closeM();render();
+}
+function delRem(id){S.items=S.items.filter(x=>x.id!==id);save();render()}
+const left=i=>{const p=[];if(i.remKm!=null)p.push(i.remKm>=0?fmt(i.remKm)+' km left':'over by '+fmt(-i.remKm)+' km');if(i.remD!=null)p.push(i.remD>=0?i.remD+' days left':'over by '+(-i.remD)+' days');return p.join(' · ')};
+function setOdo(){
+  const s=$('odo').value;if(s===''||!(+s>=0))return;
+  const km=Math.round(+s*10)/10;
+  if(S.odo.date){
+    const prev=S.odo.km;
+    if(km<prev)return askOdoConfirm(km,'This reading ('+fmt(km)+' km) is lower than your last one ('+fmt(prev)+' km). Odometers don\'t usually go down — check for a typo.');
+    const days=Math.max(1,dd(S.odo.date,today())),jump=km-prev,r=rate(),typical=r>0?r*days:null;
+    if(jump>1000&&(typical==null||jump>typical*4+200))return askOdoConfirm(km,'That\'s a jump of '+fmt(jump)+' km since your last reading ('+fmt(prev)+' km, '+days+' day(s) ago). Double-check the number before saving.');
+  }
+  setO(km);save();render();
+}
+function askOdoConfirm(km,msg){
+  const m=document.createElement('div');m.className='modal';m.id='m';
+  m.innerHTML=`<div class="sheet"><b style="font-size:18px">⚠️ Check this reading</b><div class="sub" style="margin-top:6px">${esc(msg)}</div><div class="row" style="margin-top:14px"><button class="g" onclick="closeM()">Let me fix it</button><button onclick="setO(${km});save();closeM();render()">Save anyway</button></div></div>`;
+  document.body.appendChild(m);
+}
+function openDone(id){
+  const it=S.items.find(x=>x.id===id),oil=id==='oil',wk=it.wk!=null?it.wk:Math.max(100,Math.round(.15*it.km)),wd=it.wd!=null?it.wd:7;
+  const m=document.createElement('div');m.className='modal';m.id='m';
+  m.innerHTML=`<div class="sheet"><b style="font-size:18px">${it.icon} ${esc(it.name)}</b>${it.custom?`<label>Name</label><input id="nn" value="${esc(it.name)}">`:''}
+  ${oil?`<label>Oil type</label><select id="ot" onchange="oilPick()">${Object.keys(OILS).map(k=>`<option ${it.type===k?'selected':''}>${k}</option>`).join('')}</select>`:''}
+  <label>Service every (km)</label><input id="ik" class="meter meter-green" type="number" inputmode="numeric" value="${it.km||''}">
+  <label>Or every (days), whichever comes first</label><input id="iy" type="number" inputmode="numeric" value="${it.days||''}">
+  <label>Warn me when this many km are left</label><input id="wk" class="meter meter-red" type="number" inputmode="numeric" value="${wk}">
+  <label>Warn me when this many days are left</label><input id="wd" type="number" inputmode="numeric" value="${wd}">
+  <label>Last done at (km)</label><input id="dk" class="meter meter-blue" type="number" inputmode="numeric" value="${it.lastKm==null?'':it.lastKm}">
+  <label>Last done on (date)</label><input id="dt" type="date" value="${it.lastDate||''}">
+  <div class="row" style="margin-top:14px"><button class="g" onclick="closeM()">Cancel</button><button onclick="doneSave('${id}')">Save</button></div><div class="sub" style="text-align:center;margin-top:12px"><a href="#" onclick="remRem('${id}');return false" style="color:var(--er)">Remove this reminder</a></div></div>`;
+  document.body.appendChild(m);
+}
+function oilPick(){const o=OILS[$('ot').value];$('ik').value=o.km;$('iy').value=o.days}
+function closeM(){const m=$('m');if(m)m.remove()}
+function doneSave(id){
+  const it=S.items.find(x=>x.id===id),k=$('dk').value,n=v=>v===''?null:+v;
+  const nk=+$('ik').value||0,nd=+$('iy').value||0;if(nk||nd){it.km=nk;it.days=nd}it.on=true;if(it.custom&&$('nn')&&$('nn').value.trim())it.name=$('nn').value.trim();it.wk=n($('wk').value);it.wd=n($('wd').value);
+  if(k!==''&&+k>=0){it.lastKm=+k;it.lastDate=$('dt').value||today();if(+k>est())setO(+k)}
+  if(id==='oil'){it.type=$('ot').value;it.note=it.type}
+  save();closeM();render();
+}
+function calc(){
+  const f=[...S.fuel].sort((a,b)=>a.km-b.km);
+  const rows=f.map((e,i)=>({...e,dist:i?e.km-f[i-1].km:null,eff:i?(e.km-f[i-1].km)/e.l:null}));
+  const r=rows.filter(x=>x.eff);let avg=null,cpk=null;
+  if(r.length){
+    avg=r.reduce((s,x)=>s+x.dist,0)/r.reduce((s,x)=>s+x.l,0);
+    const pr=r.filter(x=>x.price>0);
+    if(pr.length)cpk=pr.reduce((s,x)=>s+x.price,0)/pr.reduce((s,x)=>s+x.dist,0);
+  }
+  return{rows,avg,cpk,last:r.length?r[r.length-1].eff:null,lastAt:r.length?r[r.length-1].km:null,n:r.length};
+}
+const resPts=()=>[...S.reserve,...S.fuel.filter(e=>e.rk!=null).map(e=>e.rk)].sort((a,b)=>a-b);
+function pendingReserveKm(){
+  if(!S.reserve.length)return null;
+  const rk=S.reserve[S.reserve.length-1];
+  const lastFuel=S.fuel.length?Math.max(...S.fuel.map(e=>e.km)):-1;
+  return rk>lastFuel?rk:null;
+}
+function markReserve(){
+  const msg=t=>{$('rm').textContent=t};
+  const km=+$('rk').value;
+  if(!(km>0))return msg('Enter the odometer reading.');
+  const lastFuel=S.fuel.length?Math.max(...S.fuel.map(e=>e.km)):-1;
+  if(km<=lastFuel)return msg('That reading is before your last refuel ('+fmt(lastFuel)+' km).');
+  if(S.reserve.length&&km<=S.reserve[S.reserve.length-1])return msg('That reading is before your last reserve mark.');
+  S.reserve.push(km);S.reserve.sort((a,b)=>a-b);S.resDate=S.resDate||{};S.resDate[km]=today();
+  setO(km);
+  save();render();toast('Marked on reserve at '+fmt(km)+' km.');
+}
+function clearReserve(){const k=S.reserve.pop();if(S.resDate)delete S.resDate[k];save();render()}
+function delReserve(km){const i=S.reserve.indexOf(km);if(i>=0){S.reserve.splice(i,1);if(S.resDate)delete S.resDate[km];save();render()}}
+function monthFuel(){
+  const d=new Date(),y=d.getFullYear(),m=d.getMonth(),pre=today().slice(0,7),last=new Date(y,m+1,0).getDate();
+  const mon=d.toLocaleString('en',{month:'short'});
+  const l=S.fuel.filter(e=>(e.date||'').slice(0,7)===pre).reduce((a,e)=>a+e.l,0);
+  return{l,label:'1 '+mon+' – '+last+' '+mon};
+}
+function dateAt(km){const f=S.fuel.find(e=>e.km===km);if(f)return f.date;return (S.resDate&&S.resDate[km])||''}
+function fuelChart(rows){
+  const r=rows.slice(-20);if(!r.length)return '';
+  const W=320,H=150,L=30,R=12,T=16,B=22,v=r.map(x=>x.eff);
+  let lo=Math.min(...v),hi=Math.max(...v);if(hi-lo<1){lo-=.5;hi+=.5}
+  const pad=(hi-lo)*.15;lo-=pad;hi+=pad;
+  const X=i=>r.length>1?L+i*(W-L-R)/(r.length-1):(L+W-R)/2,Y=y=>T+(hi-y)*(H-T-B)/(hi-lo);
+  let g='';
+  for(let k=0;k<3;k++){const y=lo+(hi-lo)*k/2;g+=`<line x1="${L}" x2="${W-R}" y1="${Y(y)}" y2="${Y(y)}" stroke="var(--bd)" stroke-width="1"/><text x="${L-4}" y="${Y(y)+3}" text-anchor="end" font-size="9" fill="var(--mu)">${y.toFixed(1)}</text>`}
+  if(r.length>1)g+=`<polyline fill="none" stroke="var(--ac)" stroke-width="2" points="${r.map((x,i)=>X(i)+','+Y(x.eff)).join(' ')}"/>`;
+  r.forEach((x,i)=>{g+=`<circle cx="${X(i)}" cy="${Y(x.eff)}" r="3.5" fill="var(--ac)"/>`;if(r.length<=8)g+=`<text x="${X(i)}" y="${Y(x.eff)-7}" text-anchor="middle" font-size="9" fill="var(--tx)">${x.eff.toFixed(1)}</text>`});
+  g+=`<text x="${L}" y="${H-6}" font-size="9" fill="var(--mu)">${esc(fmt(r[0].at))} km</text><text x="${W-R}" y="${H-6}" text-anchor="end" font-size="9" fill="var(--mu)">${esc(fmt(r[r.length-1].at))} km</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Fuel average chart">${g}</svg>`;
+}
+function rcalc(){
+  const r=resPts(),rows=[];
+  for(let i=1;i<r.length;i++){
+    const a=r[i-1],b=r[i],fl=S.fuel.filter(e=>e.km>=a&&e.km<b),l=fl.reduce((s,e)=>s+e.l,0);
+    if(l>0)rows.push({dist:b-a,l,eff:(b-a)/l,at:b,date:dateAt(b),price:fl.reduce((s,e)=>s+(e.price||0),0)});
+  }
+  let avg=null,cpk=null;
+  if(rows.length){
+    avg=rows.reduce((s,x)=>s+x.dist,0)/rows.reduce((s,x)=>s+x.l,0);
+    const pr=rows.filter(x=>x.price>0);
+    if(pr.length)cpk=pr.reduce((s,x)=>s+x.price,0)/pr.reduce((s,x)=>s+x.dist,0);
+  }
+  return{rows,avg,cpk,last:rows.length?rows[rows.length-1].eff:null,lastAt:rows.length?rows[rows.length-1].at:null,n:rows.length};
+}
+function fuel(){
+  const useR=resPts().length>0,f=calc(),c=useR?rcalc():f;
+  const pend=pendingReserveKm();
+  let h=`<div class="card"><b>🟡 Reserve</b>
+  ${pend!=null
+    ?`<div class="sub">On reserve since <b>${fmt(pend)} km</b>. When you fill up, just enter the litres below.</div><button class="g" style="width:100%;margin-top:10px" onclick="clearReserve()">↩ Undo reserve mark</button>`
+    :`<div class="sub">Hit reserve but not refueling right now? Save the reading here. When you do fill up, just enter the litres below.</div><input id="rk" class="meter meter-gold" type="number" inputmode="numeric" placeholder="Odometer now (km)" value="${est()||''}"><button class="g" style="width:100%;margin-top:10px" onclick="markReserve()">⚠️ Mark as on reserve</button><div class="sub" id="rm" style="color:var(--er)"></div>`}
+  </div>
+  <div class="card"><b>⛽ Refuel</b>
+  <label>Litres added</label><input id="fl" class="meter meter-gold" type="number" inputmode="decimal" step="0.01" placeholder="e.g. 5.5">
+  ${pend!=null?`<div class="sub" style="margin-top:14px">🟡 This fill-up will be recorded as coming off reserve (marked at ${fmt(pend)} km).</div>`:''}
+  <details style="margin-top:8px"><summary class="sub">Add price (optional)</summary><input id="fp" type="number" inputmode="decimal" placeholder="Total paid" style="margin-top:6px"></details>
+  <button style="width:100%;margin-top:12px" onclick="addFuel()">Save</button><div class="sub" id="fm" style="color:var(--er)"></div></div>`;
+  h+=mapCard();
+  const ar=(useR?c.rows:c.rows.filter(x=>x.eff).map(x=>({...x,at:x.km})));
+  if(ar.length){
+    const nw=ar[ar.length-1],od=ar.length>1?ar[ar.length-2]:null,df=od?nw.eff-od.eff:null;
+    const col=x=>`<div class="stat"><div class="sub">${x.t}</div><div class="big" data-g="${gh(x.v)}">${x.v}</div><div class="sub">${x.u}</div>${x.d||''}${x.s||''}</div>`;
+    h+=`<div class="card row">${col({s:spark(ar.map(x=>x.eff).slice(-12)),t:'New avg',v:nw.eff.toFixed(2),u:'km/L at '+fmt(nw.at)+' km',d:df==null?'':`<div class="sub" style="color:${df>=0?'var(--ok)':'var(--er)'};font-weight:700">${df>=0?'▲ +':'▼ '}${df.toFixed(2)}</div>`})}${col(od?{s:spark(ar.slice(0,-1).map(x=>x.eff).slice(-12)),t:'Previous avg',v:od.eff.toFixed(2),u:'km/L at '+fmt(od.at)+' km'}:{t:'Previous avg',v:'—',u:'not enough data yet'})}</div>
+    <div class="sub" style="margin:-4px 4px 12px">${useR?'Avg = km ridden between two reserve readings ÷ litres filled in that stretch.':'Avg = km since your previous refuel ÷ litres added in this refuel.'}</div>`;
+    
+  }else if(S.fuel.length){h+=`<div class="card sub">Saved. ${useR?'After your next “on reserve” refuel':'After your next refuel'} your km/L will appear here.</div>`}
+  {
+   if(ar.length){
+    
+   }}
+  if(S.fuel.length){const mf=monthFuel();h+=`<div class="card" style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center"><div class="sub" style="margin:0">⛽ Filled this month<br>(${mf.label})</div><div style="text-align:right"><div style="font-size:20px;font-weight:700">${+mf.l.toFixed(2)} L</div>${spark(S.fuel.slice(-10).map(e=>e.l))}</div></div>`}
+  if(f.rows.length||S.reserve.length){
+    const ev=[...f.rows.map(e=>({t:'f',km:e.km,e})),...S.reserve.map(km=>({t:'r',km}))].sort((a,b)=>b.km-a.km||(a.t==='r'?-1:1));
+    h+=`<details class="card"><summary><b>History</b></summary>`;
+    for(const x of ev.slice(0,20)){
+      if(x.t==='r')h+=`<div class="li"><div>🟡 On reserve at ${fmt(x.km)} km<div class="sub">${esc((S.resDate&&S.resDate[x.km])||'')}</div></div><button class="g" onclick="delReserve(${x.km})">Delete</button></div>`;
+      else{const e=x.e;h+=`<div class="li"><div>${fmt(e.km)} km · ${e.l} L${e.rk!=null?' ⚠️':''}<div class="sub">${e.eff&&!useR?e.dist+' km · '+e.eff.toFixed(1)+' km/L · ':''}${esc(e.date)}</div></div><button class="g" onclick="delFuel(${e.km})">Delete</button></div>`}
+    }
+    h+=`</details>`;
+  }
+  return h;
+}
+function addFuel(){
+  const km=est(),l=+$('fl').value,p=+$('fp').value||0,msg=t=>{$('fm').textContent=t};
+  if(!(l>0))return msg('Enter the litres.');
+  if(!(km>0))return msg('Enter your current km in the Odometer box at the top first.');
+  const last=S.fuel.length?Math.max(...S.fuel.map(e=>e.km)):null;
+  if(last!=null&&km<=last)return msg('Your odometer ('+fmt(km)+' km) is not higher than your last refuel ('+fmt(last)+' km). Update the Odometer at the top first.');
+  const e={km,l,price:p,date:today()};
+  S.fuel.push(e);if(km>est())setO(km);save();render();
+}
+function delFuel(km){const i=S.fuel.findIndex(e=>e.km===km);if(i>=0){S.fuel.splice(i,1);save();render()}}
+function bk(){const t=$('bt');t.value=JSON.stringify(S);t.select();try{navigator.clipboard.writeText(t.value).catch(()=>{})}catch(e){}$('bm').textContent='Backup ready. Copy it if it was not copied automatically.'}
+function rs(){
+  try{const o=JSON.parse($('bt').value);if(!o.items||!o.fuel||!o.odo)throw 0;S=o;S.log=S.log||[];S.olog=S.olog||[];S.reserve=S.reserve||[];S.trips=S.trips||[];save();render()}
+  catch(e){$('bm').textContent='That does not look like a valid backup.'}
+}
+let T=null,W=null,wl=null,gmsg='';
+function hav(a,b,c,d){const r=x=>x*Math.PI/180,p=r(c-a),q=r(d-b),z=Math.sin(p/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(q/2)**2;return 12742000*Math.asin(Math.sqrt(z))}
+function tStart(){
+  gmsg='';
+  if(!navigator.geolocation){gmsg='This browser does not support GPS tracking.';render();return}
+  T={dist:0,max:0,moveSec:0,stops:0,stopSec:0,stopStart:null,last:null,t0:Date.now(),spd:0,hist:[]};
+  W=navigator.geolocation.watchPosition(onPos,gErr,{enableHighAccuracy:true,maximumAge:0,timeout:30000});
+  try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(l=>{wl=l}).catch(()=>{})}catch(e){}
+  render();
+}
+function gErr(e){
+  gmsg=e.code===1?'Location access is blocked. Allow location for this page in your browser or phone settings, then try again.':'No GPS signal yet. Keep the phone where it can see the sky.';
+  if(e.code===1)tStop();else if(tab==='t')render();
+}
+function onPos(p){
+  if(!T)return;
+  const c=p.coords;if(c.accuracy>50)return;
+  const t=p.timestamp,L=T.last;gmsg='';
+  if(L){
+    const dt=(t-L.t)/1000,d=hav(L.lat,L.lon,c.latitude,c.longitude);
+    if(dt>0){
+      const hasS=c.speed!=null&&!isNaN(c.speed),v=hasS?c.speed*3.6:d/dt*3.6;
+      if(v<(hasS?3:6)){T.spd=0;if(T.stopStart==null)T.stopStart=t}
+      else{
+        if(T.stopStart!=null){const s=(t-T.stopStart)/1000;if(s>=20){T.stops++;T.stopSec+=s}T.stopStart=null}
+        if(v<200){T.spd=v;T.dist+=d;T.moveSec+=dt;if(v>T.max)T.max=v}
+      }
+    }
+  }
+  T.hist.push([T.dist/1000,T.spd,T.max]);if(T.hist.length>50)T.hist.shift();
+  T.last={lat:c.latitude,lon:c.longitude,t};
+  if(tab==='t')render();
+}
+function tStop(){
+  if(W!=null&&navigator.geolocation)navigator.geolocation.clearWatch(W);W=null;
+  if(wl){wl.release().catch(()=>{});wl=null}
+  if(T){
+    const now=Date.now();
+    if(T.stopStart!=null){const s=(now-T.stopStart)/1000;if(s>=20){T.stops++;T.stopSec+=s}}
+    const km=T.dist/1000;
+    if(km>=0.1){
+      S.trips.unshift({date:today(),km:+km.toFixed(1),max:Math.round(T.max),avg:T.moveSec>0?+(km/(T.moveSec/3600)).toFixed(0):0,stops:T.stops,stopMin:Math.round(T.stopSec/60),dur:Math.round((now-T.t0)/60000)});
+      S.trips=S.trips.slice(0,20);
+      setO(Math.round((S.odo.km+km)*10)/10);
+    }
+  }
+  T=null;save();render();
+}
+function trip(){
+  const on=!!T,km=on?T.dist/1000:0,mv=on&&T.moveSec>0?km/(T.moveSec/3600):0;
+  const b=(l,v,u,s)=>`<div class="stat"><div class="sub">${l}</div><div class="big" data-g="${gh(v)}">${v}</div><div class="sub">${u}</div>${s||''}</div>`;
+  let h=`<div class="card"><b>Ride tracker (GPS)</b><div class="sub">Tap Start before you ride. Keep this page open and the screen on (a phone mount helps). When you stop, the distance is added to your odometer. You can correct the odometer anytime in the Service tab.</div><button style="width:100%;margin-top:12px;${on?'background:var(--er)':''}" onclick="${on?'tStop()':'tStart()'}">${on?'■ Stop trip':'▶ Start trip'}</button><div class="sub" style="color:var(--er)">${esc(gmsg)}</div></div>`;
+  if(on)h+=`<div class="card"><div class="row">${b('Distance',km.toFixed(2),'km',spark(T.hist.map(h=>h[0])))}${b('Speed',Math.round(T.spd),'km/h',spark(T.hist.map(h=>h[1])))}${b('Top speed',Math.round(T.max),'km/h',spark(T.hist.map(h=>h[2])))}</div><div class="row" style="margin-top:14px">${b('Avg riding',Math.round(mv),'km/h')}${b('Stops',T.stops,Math.round(T.stopSec/60)+' min stopped')}</div>${T.last?'':'<div class="sub">Waiting for GPS signal…</div>'}</div>`;
+  if(S.trips.length){
+    h+=`<div class="card"><b>Recent trips</b>`;
+    for(const t of S.trips.slice(0,10))h+=`<div class="li"><div>${esc(t.date)} · ${t.km} km<div class="sub">${t.dur} min · avg ${t.avg} · top ${t.max} km/h · ${t.stops} stops (${t.stopMin} min)</div></div></div>`;
+    h+=`</div>`;
+  }
+  return h;
+}
+
+const mapCard=()=>`<details class="card"><summary><b>📍 No odometer? Add distance from a map</b></summary>
+  <div class="sub" style="margin-top:8px">Enter where you rode from and to. Google Maps shows the road distance. Type that number here and it is added to your km.</div>
+  <label>Start (leave empty to use where you are now)</label><input id="ms" placeholder="e.g. Home" oninput="mapUp()">
+  <label>End</label><input id="me" placeholder="e.g. Office" oninput="mapUp()">
+  <a id="ml" href="https://www.google.com/maps/dir/?api=1&travelmode=driving" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:12px;padding:11px;border-radius:10px;background:var(--tr);color:var(--tx);font-weight:600;text-decoration:none">🗺️ Open route in Google Maps</a>
+  <label>Distance Google Maps shows (km)</label><input id="md" class="meter meter-white" type="number" inputmode="decimal" placeholder="e.g. 18.5">
+  <label style="display:flex;align-items:center;gap:10px;color:var(--tx);font-size:15px"><input id="mr" type="checkbox" style="width:22px;height:22px;padding:0"> Round trip (count it twice)</label>
+  <button style="width:100%;margin-top:12px" onclick="addDist()">Add to my km</button><div class="sub" id="mm" style="color:var(--er)"></div><div class="sub">If Maps shows miles, multiply by 1.6.</div></details>`;
+function mapUp(){
+  const a=$('ms').value.trim(),b=$('me').value.trim();
+  $('ml').href='https://www.google.com/maps/dir/?api=1&travelmode=driving'+(a?'&origin='+encodeURIComponent(a):'')+(b?'&destination='+encodeURIComponent(b):'');
+}
+function addDist(){
+  let d=+$('md').value;
+  if(!(d>0)){$('mm').textContent='Type the distance Google Maps shows, in km.';return}
+  if($('mr').checked)d*=2;
+  setO(Math.round((S.odo.km+d)*10)/10);save();render();toast('Added '+Math.round(d*10)/10+' km to your odometer.');
+}
+setInterval(()=>{let ch=0;S.items.forEach(x=>{if(x.undo&&Date.now()-x.undo.t>=UNDO_MS){delete x.undo;ch=1}});if(ch){save();if(tab==='s')render()}},20000);
+async function exportReport(){
+  const em=$('em');em.textContent='Preparing…';
+  try{
+    if(typeof XLSX==='undefined'){em.textContent='Excel library failed to load. Check your connection and try again.';return}
+    const dl=await claude.use('downloads');
+    if(!dl){em.textContent='Downloads are not available in this view.';return}
+    const months={};
+    S.fuel.forEach(e=>{const m=e.date.slice(0,7);(months[m]=months[m]||[]).push({date:e.date,type:'Fuel',item:e.l+' L'+(e.rk!=null?' (reserve)':''),km:e.km,cost:e.price||0})});
+    S.log.forEach(e=>{const m=e.date.slice(0,7);(months[m]=months[m]||[]).push({date:e.date,type:'Service',item:e.name,km:e.km,cost:e.price||0})});
+    const keys=Object.keys(months).sort();
+    const keep=keys.slice(-5);
+    if(!keep.length){em.textContent='No fuel or service entries yet to export.';return}
+    const wb=XLSX.utils.book_new(),summary=[['Month','Fuel cost','Service cost','Total']];
+    for(const k of keep){
+      const rows=months[k].sort((a,b)=>a.date.localeCompare(b.date));
+      const data=[['Date','Type','Item','Km','Cost']];
+      rows.forEach(r=>data.push([r.date,r.type,r.item,r.km,r.cost]));
+      const fc=rows.filter(r=>r.type==='Fuel').reduce((s,r)=>s+r.cost,0),sc=rows.filter(r=>r.type==='Service').reduce((s,r)=>s+r.cost,0);
+      data.push(['','','','Total',fc+sc]);
+      const ws=XLSX.utils.aoa_to_sheet(data);
+      XLSX.utils.book_append_sheet(wb,ws,k);
+      summary.push([k,fc,sc,fc+sc]);
+    }
+    const sws=XLSX.utils.aoa_to_sheet(summary);
+    XLSX.utils.book_append_sheet(wb,sws,'Summary');
+    wb.SheetNames=['Summary',...wb.SheetNames.filter(n=>n!=='Summary')];
+    const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+    const name=(S.name||'Bike').trim().replace(/[^a-z0-9]+/gi,'_')||'Bike';
+    const res=await dl.save({filename:name+'_expenses.xlsx',data:new Blob([out],{type:'application/octet-stream'})});
+    em.textContent=res.status==='saved'?'Saved. Only the latest '+keep.length+' month(s) are included.':'Sent.';
+  }catch(err){
+    em.textContent=(err&&err.code==='declined')?'':'Could not export ('+((err&&err.code)||'error')+').';
+  }
+}
+load();applyTheme();
+if(location.hash==='#trip')tab='t';else if(location.hash==='#service')tab='s';else tab='f';
+bootMs=(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)?0:2600;
+render();
+boot();
+</script>
+<script>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err => console.warn('PWA service worker registration failed:', err)));
+}
+</script>
+</body></html>
